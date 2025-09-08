@@ -26,7 +26,7 @@ public class Film {
     @Positive(message = "Продолжительность должна быть положительной")
     private Integer duration;
 
-    Set<Long> likes = new HashSet<>();
+    private Set<Long> likes = new HashSet<>();
 
     @AssertTrue(message = "Дата релиза не может быть раньше 28 декабря 1895 года")
     public boolean isReleaseDateValid() {
