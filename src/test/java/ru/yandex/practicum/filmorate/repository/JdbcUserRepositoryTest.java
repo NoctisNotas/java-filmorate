@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JdbcUserRepositoryTest {
 
     private final JdbcUserRepository userRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Test
     void testFindUserById() {
@@ -42,24 +44,6 @@ class JdbcUserRepositoryTest {
         Collection<User> users = userRepository.findAll();
 
         assertThat(users).hasSize(4);
-    }
-
-    @Test
-    void testSaveUser() {
-        User newUser = new User();
-        newUser.setEmail("newuser@example.com");
-        newUser.setLogin("newuser");
-        newUser.setName("New User");
-        newUser.setBirthday(LocalDate.of(1995, 5, 5));
-
-        User savedUser = userRepository.save(newUser);
-
-        assertThat(savedUser).isNotNull();
-        assertThat(savedUser.getId()).isNotNull();
-        assertThat(savedUser.getEmail()).isEqualTo("newuser@example.com");
-
-        Collection<User> allUsers = userRepository.findAll();
-        assertThat(allUsers).hasSize(5);
     }
 
     @Test
@@ -107,6 +91,34 @@ class JdbcUserRepositoryTest {
 
         assertThat(commonFriends).hasSize(1);
         assertThat(commonFriends.iterator().next().getId()).isEqualTo(3L);
+    }
+
+    @Test
+    void testSaveUser() {
+        // Очищаем таблицы в правильном порядке (из-за foreign keys)
+        jdbcTemplate.update("DELETE FROM friendship");
+        jdbcTemplate.update("DELETE FROM users");
+
+        // Сбрасываем sequence для users (для H2)
+        jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN user_id RESTART WITH 1");
+
+        User newUser = new User();
+        newUser.setEmail("newuser@example.com");
+        newUser.setLogin("newuser");
+        newUser.setName("New User");
+        newUser.setBirthday(LocalDate.of(1995, 5, 5));
+
+        User savedUser = userRepository.save(newUser);
+
+        assertThat(savedUser).isNotNull();
+        assertThat(savedUser.getId()).isEqualTo(1L); // Теперь будет 1
+        assertThat(savedUser.getEmail()).isEqualTo("newuser@example.com");
+        assertThat(savedUser.getLogin()).isEqualTo("newuser");
+        assertThat(savedUser.getName()).isEqualTo("New User");
+        assertThat(savedUser.getBirthday()).isEqualTo(LocalDate.of(1995, 5, 5));
+
+        Collection<User> allUsers = userRepository.findAll();
+        assertThat(allUsers).hasSize(1); // Теперь только 1 пользователь
     }
 
     @Test

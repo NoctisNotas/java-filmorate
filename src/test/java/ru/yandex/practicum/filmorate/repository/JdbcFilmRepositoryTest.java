@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.GenreMapper;
 import ru.yandex.practicum.filmorate.mapper.MpaRatingMapper;
@@ -33,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JdbcFilmRepositoryTest {
 
     private final JdbcFilmRepository filmRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Test
     void testFindFilmById() {
@@ -53,32 +56,6 @@ class JdbcFilmRepositoryTest {
         Collection<Film> films = filmRepository.findAll();
 
         assertThat(films).hasSize(4);
-    }
-
-    @Test
-    void testSaveFilm() {
-        Film newFilm = new Film();
-        newFilm.setName("New Film");
-        newFilm.setDescription("New Description");
-        newFilm.setReleaseDate(LocalDate.of(2020, 6, 6));
-        newFilm.setDuration(100);
-
-        MpaRating mpa = new MpaRating();
-        mpa.setId(1L);
-        newFilm.setMpa(mpa);
-
-        Set<Genre> genres = new HashSet<>();
-        Genre genre = new Genre();
-        genre.setId(1L);
-        genres.add(genre);
-        newFilm.setGenres(genres);
-
-        Film savedFilm = filmRepository.save(newFilm);
-
-        assertThat(savedFilm).isNotNull();
-        assertThat(savedFilm.getId()).isNotNull();
-        assertThat(savedFilm.getName()).isEqualTo("New Film");
-        assertThat(savedFilm.getGenres()).hasSize(1);
     }
 
     @Test
@@ -114,6 +91,42 @@ class JdbcFilmRepositoryTest {
         assertThat(film1Found).isTrue();
 
         filmRepository.removeLike(1L, 3L);
+    }
+
+    @Test
+    void testSaveFilm() {
+
+        jdbcTemplate.update("DELETE FROM film_genres");
+        jdbcTemplate.update("DELETE FROM film_likes");
+        jdbcTemplate.update("DELETE FROM films");
+        jdbcTemplate.execute("ALTER TABLE films ALTER COLUMN film_id RESTART WITH 1");
+
+        Film newFilm = new Film();
+        newFilm.setName("New Test Film");
+        newFilm.setDescription("Test Description");
+        newFilm.setReleaseDate(LocalDate.of(2023, 1, 1));
+        newFilm.setDuration(150);
+
+        MpaRating mpa = new MpaRating();
+        mpa.setId(1L);
+        newFilm.setMpa(mpa);
+
+        Set<Genre> genres = new HashSet<>();
+        Genre genre = new Genre();
+        genre.setId(1L);
+        genres.add(genre);
+        newFilm.setGenres(genres);
+
+        Film savedFilm = filmRepository.save(newFilm);
+        assertThat(savedFilm).isNotNull();
+        assertThat(savedFilm.getId()).isEqualTo(1L);
+        assertThat(savedFilm.getName()).isEqualTo("New Test Film");
+        assertThat(savedFilm.getDescription()).isEqualTo("Test Description");
+        assertThat(savedFilm.getReleaseDate()).isEqualTo(LocalDate.of(2023, 1, 1));
+        assertThat(savedFilm.getDuration()).isEqualTo(150);
+        assertThat(savedFilm.getMpa()).isNotNull();
+        assertThat(savedFilm.getMpa().getId()).isEqualTo(1L);
+        assertThat(savedFilm.getGenres().iterator().next().getId()).isEqualTo(1L);
     }
 
     @Test
