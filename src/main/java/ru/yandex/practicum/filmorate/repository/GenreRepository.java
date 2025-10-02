@@ -6,6 +6,8 @@ import java.util.Optional;
 
 public interface GenreRepository {
     Collection<Genre> findAll();
+
     Optional<Genre> findById(Long id);
+
     boolean existsById(Long id);
 }
