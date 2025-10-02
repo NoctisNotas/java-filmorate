@@ -12,7 +12,6 @@ import java.util.Set;
 
 @Data
 public class Film {
-
     private Long id;
 
     @NotBlank(message = "Название фильма не должно быть пустым")
@@ -26,7 +25,8 @@ public class Film {
     @Positive(message = "Продолжительность должна быть положительной")
     private Integer duration;
 
-    private Set<Long> likes = new HashSet<>();
+    private MpaRating mpa;
+    private Set<Genre> genres = new HashSet<>();
 
     @AssertTrue(message = "Дата релиза не может быть раньше 28 декабря 1895 года")
     public boolean isReleaseDateValid() {
