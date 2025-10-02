@@ -1,10 +1,10 @@
-# Filmorate - Social Network for Film Lovers
+# Filmorate - Social Network for film rating
 
 Filmorate is a social network  where users can share information about films, rate them, and find like-minded people.
 
 ## Database Schema
 
-![Database Schema](database_schema.png)
+![Database Schema](database_schema.svg)
 
 ## Database Structure Explanation
 
