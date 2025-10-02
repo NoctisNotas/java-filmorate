@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -133,7 +132,7 @@ public class JdbcFilmRepository implements FilmRepository {
             return genre;
         }, film.getId());
 
-        film.setGenres(new HashSet<>(genres));
+        film.setGenres(new LinkedHashSet<>(genres));
     }
 
     private void loadMpaDetails(Film film) {
@@ -147,18 +146,16 @@ public class JdbcFilmRepository implements FilmRepository {
             return;
         }
 
-        Set<Genre> uniqueGenres = film.getGenres().stream()
-                .sorted(Comparator.comparing(Genre::getId))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+        List<Genre> genresInOrder = new ArrayList<>(film.getGenres());
 
-        for (Genre genre : uniqueGenres) {
+        for (Genre genre : genresInOrder) {
             if (!genreRepository.existsById(genre.getId())) {
                 throw new NotFoundException("Жанр с id=" + genre.getId() + " не найден");
             }
         }
 
         String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
-        for (Genre genre : uniqueGenres) {
+        for (Genre genre : genresInOrder) {
             jdbcTemplate.update(sql, film.getId(), genre.getId());
         }
     }
