@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -147,17 +148,29 @@ public class JdbcFilmRepository implements FilmRepository {
         }
 
         List<Genre> genresInOrder = new ArrayList<>(film.getGenres());
+        Set<Long> genreIds = genresInOrder.stream()
+                .map(Genre::getId)
+                .collect(Collectors.toSet());
 
-        for (Genre genre : genresInOrder) {
-            if (!genreRepository.existsById(genre.getId())) {
-                throw new NotFoundException("Жанр с id=" + genre.getId() + " не найден");
-            }
+        String checkSql = "SELECT COUNT(*) FROM genres WHERE genre_id IN (" +
+                genreIds.stream().map(id -> "?").collect(Collectors.joining(",")) + ")";
+
+        Integer foundCount = jdbcTemplate.queryForObject(
+                checkSql,
+                Integer.class,
+                genreIds.toArray()
+        );
+
+        if (foundCount == null || foundCount != genreIds.size()) {
+            throw new NotFoundException("Один или несколько жанров не найдены");
         }
 
         String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
-        for (Genre genre : genresInOrder) {
-            jdbcTemplate.update(sql, film.getId(), genre.getId());
-        }
+        List<Object[]> batchArgs = genresInOrder.stream()
+                .map(genre -> new Object[]{film.getId(), genre.getId()})
+                .collect(Collectors.toList());
+
+        jdbcTemplate.batchUpdate(sql, batchArgs);
     }
 
     private void updateFilmGenres(Film film) {
