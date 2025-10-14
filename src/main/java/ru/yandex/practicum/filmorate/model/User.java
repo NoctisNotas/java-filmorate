@@ -12,7 +12,6 @@ import java.util.Set;
 
 @Data
 public class User {
-
     private Long id;
 
     @NotBlank(message = "Адрес электронной почты не должен быть пустым")

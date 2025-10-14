@@ -1,96 +1,78 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.repository.UserRepository;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
-    private final UserStorage userStorage;
-
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
+    private final UserRepository userRepository;
 
     public Collection<User> getAll() {
-        return userStorage.getAll();
+        return userRepository.findAll();
     }
 
     public User create(User user) {
-        return userStorage.create(user);
+        return userRepository.save(user);
     }
 
     public User update(User user) {
-        return userStorage.update(user);
+        if (!userRepository.existsById(user.getId())) {
+            throw new NotFoundException("Пользователь с id = " + user.getId() + " не найден");
+        }
+
+        return userRepository.update(user);
     }
 
     public User getUser(Long id) {
-        return userStorage.getUser(id);
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
     }
 
     public void addFriend(Long id, Long friendId) {
-        log.debug("Запрос на добавление в друзья: пользователь {} хочет добавить пользователя {}", id, friendId);
-        User user = userStorage.getUser(id);
-        if (user == null) {
-            log.warn("Пользователь с id {} не найден", id);
-            throw new NotFoundException("Пользователь с id  " + id + " не найден");
+        if (!userRepository.existsById(id)) {
+            throw new NotFoundException("Пользователь с id " + id + " не найден");
         }
-
-        User friend = userStorage.getUser(friendId);
-        if (friend == null) {
-            log.warn("Пользователь с id {} не найден", friendId);
-            throw new NotFoundException("Пользователь с id  " + friendId + " не найден");
+        if (!userRepository.existsById(friendId)) {
+            throw new NotFoundException("Пользователь с id " + friendId + " не найден");
         }
-
-        user.getFriends().add(friendId);
-        friend.getFriends().add(id);
-
-        userStorage.update(user);
-        userStorage.update(friend);
-        log.info("Пользователи {} и {} успешно добавлены в друзья", id, friendId);
+        userRepository.addFriend(id, friendId);
     }
 
     public void deleteFriend(Long id, Long friendId) {
-        log.debug("Запрос на удаление из друзей: пользователь {} хочет удалить пользователя {}", id, friendId);
-        User user = userStorage.getUser(id);
-        User friend = userStorage.getUser(friendId);
+        if (!userRepository.existsById(id)) {
+            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        }
+        if (!userRepository.existsById(friendId)) {
+            throw new NotFoundException("Пользователь с id = " + friendId + " не найден");
+        }
 
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(id);
-
-        userStorage.update(user);
-        userStorage.update(friend);
-        log.debug("Пользователь {} удалил из друзей пользователя {}", id, friendId);
+        userRepository.removeFriend(id, friendId);
     }
 
     public Collection<User> getFriends(Long id) {
-        log.debug("Запрос на получение списка друзей пользователя с ID: {}", id);
-        User user = userStorage.getUser(id);
-        log.info("Получен список друзей для пользователя с ID: {}", id);
-        return user.getFriends().stream()
-                .map(userStorage::getUser)
-                .collect(Collectors.toList());
+        if (!userRepository.existsById(id)) {
+            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        }
+
+        return userRepository.findFriends(id);
     }
 
     public Collection<User> findCommonFriends(Long id, Long otherUserId) {
-        log.debug("Запрос на поиск общих друзей между пользователями {} и {}", id, otherUserId);
-        User user = userStorage.getUser(id);
-        User otherUser = userStorage.getUser(otherUserId);
+        if (!userRepository.existsById(id)) {
+            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        }
+        if (!userRepository.existsById(otherUserId)) {
+            throw new NotFoundException("Пользователь с id = " + otherUserId + " не найден");
+        }
 
-        Collection<User> commonFriends = user.getFriends().stream()
-                .filter(otherUser.getFriends()::contains)
-                .map(userStorage::getUser)
-                .collect(Collectors.toList());
-        log.info("Найдено {} общих друзей между пользователями {} и {}", commonFriends.size(), id, otherUserId);
-
-        return commonFriends;
+        return userRepository.findCommonFriends(id, otherUserId);
     }
 }
