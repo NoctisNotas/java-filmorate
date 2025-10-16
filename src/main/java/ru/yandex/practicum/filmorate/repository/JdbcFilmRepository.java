@@ -181,7 +181,7 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     @Override
-    public void deleteById (Long id) {
+    public void deleteById(Long id) {
         String deleteFilmSql = "DELETE FROM films WHERE film_id = ?";
         jdbcTemplate.update(deleteFilmSql, id);
     }
