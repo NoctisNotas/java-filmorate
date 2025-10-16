@@ -75,4 +75,11 @@ public class UserService {
 
         return userRepository.findCommonFriends(id, otherUserId);
     }
+
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        }
+        userRepository.deleteById(id);
+    }
 }

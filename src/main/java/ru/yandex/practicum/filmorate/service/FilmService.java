@@ -75,4 +75,11 @@ public class FilmService {
             film.getGenres().forEach(genre -> genreService.getGenre(genre.getId()));
         }
     }
+
+    public void deleteFilm(Long id) {
+        if (!filmRepository.existsById(id)) {
+            throw new NotFoundException("Фильм с id = " + id + " не найден");
+        }
+        filmRepository.deleteById(id);
+    }
 }

@@ -22,4 +22,6 @@ public interface UserRepository {
     Collection<User> findCommonFriends(Long userId, Long otherUserId);
 
     boolean existsById(Long id);
+
+    void deleteById(Long id);
 }

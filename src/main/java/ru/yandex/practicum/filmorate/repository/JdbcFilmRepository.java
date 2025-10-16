@@ -179,4 +179,10 @@ public class JdbcFilmRepository implements FilmRepository {
 
         saveFilmGenres(film);
     }
+
+    @Override
+    public void deleteById (Long id) {
+        String deleteFilmSql = "DELETE FROM films WHERE film_id = ?";
+        jdbcTemplate.update(deleteFilmSql, id);
+    }
 }

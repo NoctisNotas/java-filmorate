@@ -20,4 +20,6 @@ public interface FilmRepository {
     Collection<Film> findPopularFilms(int count);
 
     boolean existsById(Long id);
+
+    void deleteById(Long id);
 }

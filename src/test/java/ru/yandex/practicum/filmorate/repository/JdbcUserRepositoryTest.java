@@ -95,11 +95,9 @@ class JdbcUserRepositoryTest {
 
     @Test
     void testSaveUser() {
-        // Очищаем таблицы в правильном порядке (из-за foreign keys)
         jdbcTemplate.update("DELETE FROM friendship");
         jdbcTemplate.update("DELETE FROM users");
 
-        // Сбрасываем sequence для users (для H2)
         jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN user_id RESTART WITH 1");
 
         User newUser = new User();
@@ -136,5 +134,16 @@ class JdbcUserRepositoryTest {
         assertThat(friendsAfterRemove)
                 .extracting(User::getId)
                 .doesNotContain(4L);
+    }
+
+    @Test
+    void testDeleteUser() {
+        userRepository.deleteById(1L);
+
+        Optional<User> userAfterDelete = userRepository.findById(1L);
+        assertThat(userAfterDelete).isEmpty();
+
+        boolean exists = userRepository.existsById(1L);
+        assertThat(exists).isFalse();
     }
 }

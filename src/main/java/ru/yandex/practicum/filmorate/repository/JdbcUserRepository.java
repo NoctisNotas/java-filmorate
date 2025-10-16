@@ -125,4 +125,10 @@ public class JdbcUserRepository implements UserRepository {
         List<Long> friendIds = jdbcTemplate.queryForList(sql, Long.class, user.getId());
         user.setFriends(new HashSet<>(friendIds));
     }
+
+    @Override
+    public void deleteById (Long id) {
+        String deleteUserSql = "DELETE FROM users WHERE user_id = ?";
+        jdbcTemplate.update(deleteUserSql, id);
+    }
 }

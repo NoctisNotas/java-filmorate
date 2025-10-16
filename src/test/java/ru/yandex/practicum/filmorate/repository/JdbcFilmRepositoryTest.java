@@ -147,4 +147,15 @@ class JdbcFilmRepositoryTest {
                             .containsExactlyInAnyOrder(1L, 2L);
                 });
     }
+
+    @Test
+    void testDeleteFilm() {
+        filmRepository.deleteById(1L);
+
+        Optional<Film> filmAfterDelete = filmRepository.findById(1L);
+        assertThat(filmAfterDelete).isEmpty();
+
+        boolean exists = filmRepository.existsById(1L);
+        assertThat(exists).isFalse();
+    }
 }
