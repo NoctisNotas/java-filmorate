@@ -24,7 +24,7 @@ public interface UserRepository {
 
     boolean existsById(Long id);
 
-    List<Long> getUsersWithSameLikes(Long user_id);
+    List<Long> getUsersWithSameLikes(Long userId);
 
     boolean userHasLike(Long id);
 }
