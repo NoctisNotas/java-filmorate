@@ -121,6 +121,28 @@ public class JdbcFilmRepository implements FilmRepository {
         return count != null && count > 0;
     }
 
+    @Override
+    public List<Film> getFilmsFromUsersThatLiked(List<Long> userId) {
+        if (userId == null || userId.isEmpty()) {
+            return Collections.emptyList();
+        }
+        String sql = "SELECT * FROM films " +
+                "WHERE film_id IN (SELECT DISTINCT film_id FROM film_likes WHERE user_id IN (" +
+                String.join(",", Collections.nCopies(userId.size(), "?")) +
+                ")) ORDER BY film_id";
+        List<Film> films = jdbcTemplate.query(sql, filmMapper, userId.toArray());
+        films.forEach(this::loadFilmGenres);
+        films.forEach(this::loadMpaDetails);
+        return films;
+    }
+
+    @Override
+    public List<Long> getFilmsFromUser(Long id) {
+        String sql = "SELECT film_id FROM film_likes " +
+                "WHERE user_id = ?";
+        return jdbcTemplate.queryForList(sql, Long.class, id);
+    }
+
     private void loadFilmGenres(Film film) {
         String sql = "SELECT g.genre_id, g.name FROM film_genres fg " +
                 "JOIN genres g ON fg.genre_id = g.genre_id " +
