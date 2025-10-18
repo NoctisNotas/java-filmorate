@@ -147,4 +147,12 @@ class JdbcFilmRepositoryTest {
                             .containsExactlyInAnyOrder(1L, 2L);
                 });
     }
+
+    @Test
+    void testGetCommonFilms() {
+        Collection<Film> commonFilms = filmRepository.getCommonFilms(1, 2);
+
+        assertThat(commonFilms).hasSize(1);
+        assertThat(commonFilms.iterator().next().getId()).isEqualTo(1L);
+    }
 }
