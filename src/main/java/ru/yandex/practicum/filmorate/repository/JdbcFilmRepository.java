@@ -115,6 +115,21 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     @Override
+    public Collection<Film> getCommonFilms(long userId, long friendId) {
+        String sql = "SELECT f.* FROM films f " +
+                "JOIN film_likes fl1 ON f.film_id = fl1.film_id " +
+                "JOIN film_likes fl2 ON fl1.film_id = fl2.film_id " +
+                "JOIN film_likes fl3 ON fl1.film_id = fl3.film_id " +
+                "WHERE fl1.user_id = ?" +
+                  "AND fl2.user_id = ?" +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(fl1.user_id) DESC ";
+        List<Film> films = jdbcTemplate.query(sql, filmMapper, userId, friendId);
+        films.forEach(this::loadFilmGenres);
+        return films;
+    }
+
+    @Override
     public boolean existsById(Long id) {
         String sql = "SELECT COUNT(*) FROM films WHERE film_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
