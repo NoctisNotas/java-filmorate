@@ -41,3 +41,16 @@ INSERT INTO friendship (user_id, friend_id, status) VALUES
 (1, 3, 'PENDING'),
 (2, 3, 'CONFIRMED'),
 (2, 4, 'CONFIRMED');
+
+INSERT INTO reviews (review_id, content, is_positive, user_id, film_id) VALUES
+(1, 'Отличный фильм', true, 1, 1),
+(2, 'Не понравился', false, 2, 1),
+(3, 'Хорошее кино', true, 3, 2);
+
+INSERT INTO review_likes (review_id, user_id, is_like) VALUES
+(1, 2, true),
+(1, 3, true),
+(1, 4, true),
+(2, 1, false),
+(2, 3, false),
+(2, 4, false);
