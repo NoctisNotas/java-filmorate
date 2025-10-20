@@ -19,6 +19,7 @@ public class FilmService {
     private final UserRepository userRepository;
     private final MpaRatingService mpaRatingService;
     private final GenreService genreService;
+    private final DirectorService directorService;
 
     public Collection<Film> getAll() {
         return filmRepository.findAll();
@@ -32,6 +33,7 @@ public class FilmService {
     public Film create(Film film) {
         validateMpaRating(film);
         validateGenres(film);
+        validateDirectors(film);
         return filmRepository.save(film);
     }
 
@@ -42,6 +44,7 @@ public class FilmService {
 
         validateMpaRating(film);
         validateGenres(film);
+        validateDirectors(film);
         return filmRepository.update(film);
     }
 
@@ -73,6 +76,12 @@ public class FilmService {
     private void validateGenres(Film film) {
         if (film.getGenres() != null) {
             film.getGenres().forEach(genre -> genreService.getGenre(genre.getId()));
+        }
+    }
+
+    private void validateDirectors(Film film) {
+        if (film.getDirectors() != null) {
+            film.getDirectors().forEach(director -> directorService.getDirector(director.getId()));
         }
     }
 }
