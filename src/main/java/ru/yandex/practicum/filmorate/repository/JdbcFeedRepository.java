@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.repository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -15,12 +14,11 @@ import ru.yandex.practicum.filmorate.model.OperationType;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 @Repository
 @RequiredArgsConstructor
-@Slf4j
 public class JdbcFeedRepository implements FeedRepository {
 
     private final JdbcTemplate jdbcTemplate;
@@ -69,7 +67,7 @@ public class JdbcFeedRepository implements FeedRepository {
     }
 
     @Override
-    public Collection<FeedEvent> getFeedEvents(Long userId) {
+    public List<FeedEvent> getFeedEvents(Long userId) {
         String sql = "SELECT f.* FROM feed f " +
                 "WHERE f.user_id = ?";
 
