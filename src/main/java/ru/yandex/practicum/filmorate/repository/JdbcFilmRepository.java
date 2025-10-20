@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.mapper.FilmMapperWithMpaAndGenre;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
@@ -26,6 +27,7 @@ public class JdbcFilmRepository implements FilmRepository {
     private final FilmMapper filmMapper;
     private final GenreRepository genreRepository;
     private final MpaRatingRepository mpaRatingRepository;
+    private final FilmMapperWithMpaAndGenre filmMapperWithMpaAndGenre;
 
     @Override
     public Collection<Film> findAll() {
@@ -119,6 +121,30 @@ public class JdbcFilmRepository implements FilmRepository {
         String sql = "SELECT COUNT(*) FROM films WHERE film_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
+    }
+
+    @Override
+    public List<Film> getFilmsFromUsersThatLiked(List<Long> userId) {
+        if (userId == null || userId.isEmpty()) {
+            return Collections.emptyList();
+        }
+        String sql = "SELECT f.*, m.name AS mpa_name, m.description AS mpa_desc, fg.genre_id, g.name AS genre_name " +
+                "FROM films AS f " +
+                "JOIN mpa_ratings AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "WHERE f.film_id IN (SELECT DISTINCT fl.film_id FROM film_likes AS fl WHERE fl.user_id IN (" +
+                String.join(",", Collections.nCopies(userId.size(), "?")) +
+                ")) ORDER BY f.film_id";
+        List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, userId.toArray());
+        return films;
+    }
+
+    @Override
+    public List<Long> getFilmsFromUser(Long id) {
+        String sql = "SELECT film_id FROM film_likes " +
+                "WHERE user_id = ?";
+        return jdbcTemplate.queryForList(sql, Long.class, id);
     }
 
     private void loadFilmGenres(Film film) {
