@@ -14,7 +14,7 @@ public class DirectorController {
     private final DirectorService directorService;
 
     @GetMapping
-    public Collection<Director> getAll(){
+    public Collection<Director> getAll() {
         return directorService.getAll();
     }
 
@@ -34,7 +34,7 @@ public class DirectorController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id){
+    public void delete(@PathVariable Long id) {
         directorService.delete(id);
     }
 }
