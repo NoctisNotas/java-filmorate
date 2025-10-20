@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.repository.JdbcFeedRepository;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
 
 import java.util.Collection;
@@ -14,6 +15,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final FeedService feedService;
 
     public Collection<User> getAll() {
         return userRepository.findAll();
@@ -44,6 +46,7 @@ public class UserService {
             throw new NotFoundException("Пользователь с id " + friendId + " не найден");
         }
         userRepository.addFriend(id, friendId);
+        feedService.addFeedEvent(id, "FRIEND", "ADD", friendId);
     }
 
     public void deleteFriend(Long id, Long friendId) {
@@ -55,6 +58,7 @@ public class UserService {
         }
 
         userRepository.removeFriend(id, friendId);
+        feedService.addFeedEvent(id, "FRIEND", "REMOVE", friendId);
     }
 
     public Collection<User> getFriends(Long id) {

@@ -3,7 +3,9 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.FeedEvent;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FeedService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import java.util.Collection;
 
@@ -11,10 +13,12 @@ import java.util.Collection;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
+    private final FeedService feedService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, FeedService feedService) {
         this.userService = userService;
+        this.feedService = feedService;
     }
 
     @GetMapping
@@ -55,5 +59,10 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{otherId}")
     public Collection<User> findCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
         return userService.findCommonFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public Collection<FeedEvent> getFeedEvents(@PathVariable Long id) {
+        return feedService.getFeedEvents(id);
     }
 }
