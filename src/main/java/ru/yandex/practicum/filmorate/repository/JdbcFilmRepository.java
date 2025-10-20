@@ -147,6 +147,44 @@ public class JdbcFilmRepository implements FilmRepository {
         return jdbcTemplate.queryForList(sql, Long.class, id);
     }
 
+    public List<Film> searchFilmsByDirectorAndTitle(String query, List<String> by) {
+        String sql = "SELECT f.*, d.name FROM films AS f " +
+                "JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "JOIN directors AS d ON fd.director_id = d.director_id " +
+                "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
+                "WHERE f.name ILIKE '%?%' OR d.name ILIKE '%?%' " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(fl.user_id) DESC";
+        List<Film> films = jdbcTemplate.query(sql, filmMapper, query, query);
+        return films;
+    }
+
+    public List<Film> searchFilmsByDirector(String query, List<String> by) {
+        String sql = "SELECT f.*, d.name FROM films AS f " +
+                "JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "JOIN directors AS d ON fd.director_id = d.director_id " +
+                "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
+                "WHERE d.name ILIKE '%?%' " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(fl.user_id) DESC";
+        List<Film> films = jdbcTemplate.query(sql, filmMapper, query);
+        return films;
+    }
+
+    public List<Film> searchFilmsByTitle(String query, List<String> by) {
+        String sql = "SELECT f.*, d.name FROM films AS f " +
+                "JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "JOIN directors AS d ON fd.director_id = d.director_id " +
+                "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
+                "WHERE f.name ILIKE '%?%' " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(fl.user_id) DESC";
+        List<Film> films = jdbcTemplate.query(sql, filmMapper, query);
+        return films;
+    }
+
+
+
     private void loadFilmGenres(Film film) {
         String sql = "SELECT g.genre_id, g.name FROM film_genres fg " +
                 "JOIN genres g ON fg.genre_id = g.genre_id " +
