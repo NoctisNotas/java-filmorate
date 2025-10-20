@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.DirectorMapper;
 import ru.yandex.practicum.filmorate.model.Director;
 
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.Collection;
 import java.util.Objects;
