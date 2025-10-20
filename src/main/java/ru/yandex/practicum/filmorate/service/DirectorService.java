@@ -37,8 +37,8 @@ public class DirectorService {
         return directorRepository.update(director);
     }
 
-    public void delete(Long id){
-        if ( directorRepository.existsById(id)){
+    public void delete(Long id) {
+        if (directorRepository.existsById(id)) {
             directorRepository.delete(id);
         } else {
             throw new NotFoundException("При удалении режиссер не найден");
