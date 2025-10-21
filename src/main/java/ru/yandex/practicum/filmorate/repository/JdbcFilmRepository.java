@@ -165,7 +165,7 @@ public class JdbcFilmRepository implements FilmRepository {
         films.forEach(this::loadFilmDirectors);
         return films;
     }
-    
+
     public List<Long> getFilmsFromUser(Long id) {
         String sql = "SELECT film_id FROM film_likes " +
                 "WHERE user_id = ?";
