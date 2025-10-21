@@ -136,6 +136,8 @@ public class JdbcFilmRepository implements FilmRepository {
         List<Film> films = jdbcTemplate.query(sql, filmMapper, id);
         films.forEach(this::loadFilmGenres);
         films.forEach(this::loadFilmDirectors);
+        return films;
+    }
     public List<Film> getFilmsFromUsersThatLiked(List<Long> userId) {
         if (userId == null || userId.isEmpty()) {
             return Collections.emptyList();
@@ -161,6 +163,7 @@ public class JdbcFilmRepository implements FilmRepository {
         films.forEach(this::loadFilmGenres);
         films.forEach(this::loadFilmDirectors);
         return films;
+    }
     public List<Long> getFilmsFromUser(Long id) {
         String sql = "SELECT film_id FROM film_likes " +
                 "WHERE user_id = ?";
