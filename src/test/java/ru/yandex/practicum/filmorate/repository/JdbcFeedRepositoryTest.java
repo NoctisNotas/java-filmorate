@@ -26,7 +26,9 @@ import static org.assertj.core.api.Assertions.assertThat;
         FilmService.class, JdbcFilmRepository.class, FilmMapper.class,
         GenreService.class, JdbcGenreRepository.class, GenreMapper.class,
         MpaRatingService.class, JdbcMpaRatingRepository.class, MpaRatingMapper.class,
-        ReviewService.class, JdbcReviewRepository.class, ReviewMapper.class})
+        ReviewService.class, JdbcReviewRepository.class, ReviewMapper.class,
+        DirectorService.class, JdbcDirectorRepository.class, DirectorMapper.class,
+        FilmMapperWithMpaAndGenre.class})
 class JdbcFeedRepositoryTest {
 
     private final JdbcFeedRepository feedRepository;
