@@ -3,8 +3,6 @@ package ru.yandex.practicum.filmorate.model;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.time.Instant;
-
 @Data
 public class FeedEvent {
     private Long timestamp;
