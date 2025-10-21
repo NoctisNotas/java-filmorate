@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FilmRepository {
+    
     Collection<Film> findAll();
 
     Optional<Film> findById(Long id);
@@ -26,6 +27,7 @@ public interface FilmRepository {
     Collection<Film> findFilmsByDirectorSortedByLikes(long id);
 
     Collection<Film> findFilmsByDirectorSortedByYear(long id);
+    
     List<Film> getFilmsFromUsersThatLiked(List<Long> id);
 
     List<Long> getFilmsFromUser(Long id);
