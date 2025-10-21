@@ -116,10 +116,12 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public Collection<Film> getCommonFilms(long userId, long friendId) {
-        String sql = "SELECT f.* FROM films f " +
+        String sql = "SELECT f.*, fg.genre_id, g.name AS genre_name FROM films f " +
                 "JOIN film_likes fl1 ON f.film_id = fl1.film_id " +
                 "JOIN film_likes fl2 ON fl1.film_id = fl2.film_id " +
                 "JOIN film_likes fl3 ON fl1.film_id = fl3.film_id " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "WHERE fl1.user_id = ?" +
                   "AND fl2.user_id = ?" +
                 "GROUP BY f.film_id " +
