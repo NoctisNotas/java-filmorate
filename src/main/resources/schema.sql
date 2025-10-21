@@ -78,7 +78,5 @@ CREATE TABLE IF NOT EXISTS feed (
     user_id BIGINT REFERENCES users(user_id) ON DELETE CASCADE,
     event_type VARCHAR(20),
     operation VARCHAR(20),
-    entity_id BIGINT,
-    FOREIGN KEY (entity_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (entity_id) REFERENCES films(film_id) ON DELETE CASCADE
+    entity_id BIGINT
 );
