@@ -9,8 +9,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.mapper.FilmMapperWithMpaAndGenre;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
@@ -138,6 +138,7 @@ public class JdbcFilmRepository implements FilmRepository {
         films.forEach(this::loadFilmDirectors);
         return films;
     }
+
     public List<Film> getFilmsFromUsersThatLiked(List<Long> userId) {
         if (userId == null || userId.isEmpty()) {
             return Collections.emptyList();
@@ -164,6 +165,7 @@ public class JdbcFilmRepository implements FilmRepository {
         films.forEach(this::loadFilmDirectors);
         return films;
     }
+    
     public List<Long> getFilmsFromUser(Long id) {
         String sql = "SELECT film_id FROM film_likes " +
                 "WHERE user_id = ?";
