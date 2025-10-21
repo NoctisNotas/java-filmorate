@@ -28,6 +28,7 @@ public class Film {
 
     private MpaRating mpa;
     private Set<Genre> genres = new HashSet<>();
+    private Set<Director> directors = new HashSet<>();
 
     @AssertTrue(message = "Дата релиза не может быть раньше 28 декабря 1895 года")
     @JsonIgnore
