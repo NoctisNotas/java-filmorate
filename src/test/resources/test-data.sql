@@ -54,3 +54,12 @@ INSERT INTO review_likes (review_id, user_id, is_like) VALUES
 (2, 1, false),
 (2, 3, false),
 (2, 4, false);
+
+INSERT INTO directors (director_id, name) VALUES
+(1, 'Director One'),
+(2, 'Director Two'),
+(3, 'Director Three');
+
+INSERT INTO film_directors (film_id, director_id) VALUES
+(1, 2),
+(2, 3);
