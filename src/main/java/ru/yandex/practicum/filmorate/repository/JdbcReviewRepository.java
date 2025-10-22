@@ -21,7 +21,7 @@ public class JdbcReviewRepository implements ReviewRepository {
 
     @Override
     public Review save(Review review) {
-        String sql = "INSERT INTO reviews (content, is_positive, user_id, film_id) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -31,6 +31,7 @@ public class JdbcReviewRepository implements ReviewRepository {
             ps.setBoolean(2, review.getIsPositive());
             ps.setLong(3, review.getUserId());
             ps.setLong(4, review.getFilmId());
+            ps.setInt(5, 0);
             return ps;
         }, keyHolder);
 
@@ -43,12 +44,14 @@ public class JdbcReviewRepository implements ReviewRepository {
     public Review update(Review review) {
         String sql = "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?";
         jdbcTemplate.update(sql, review.getContent(), review.getIsPositive(), review.getReviewId());
+        updateUseful(review.getReviewId());
+
         return findById(review.getReviewId()).orElseThrow();
     }
 
     @Override
     public Optional<Review> findById(Long id) {
-        String sql = getReviewWithUsefulSql() + " WHERE r.review_id = ? GROUP BY r.review_id";
+        String sql = "SELECT r.* FROM reviews r WHERE r.review_id = ?";
 
         try {
             Review review = jdbcTemplate.queryForObject(sql, reviewMapper, id);
@@ -66,34 +69,13 @@ public class JdbcReviewRepository implements ReviewRepository {
 
     @Override
     public List<Review> findByFilmId(Long filmId, int count) {
-        String sql = "SELECT r.*, " +
-                "COUNT(CASE WHEN rl.is_like = true THEN 1 END) as likes_count, " +
-                "COUNT(CASE WHEN rl.is_like = false THEN 1 END) as dislikes_count, " +
-                "(COUNT(CASE WHEN rl.is_like = true THEN 1 END) - " +
-                "COUNT(CASE WHEN rl.is_like = false THEN 1 END)) as useful " +
-                "FROM reviews r " +
-                "LEFT JOIN review_likes rl ON r.review_id = rl.review_id " +
-                "WHERE r.film_id = ? " +
-                "GROUP BY r.review_id " +
-                "ORDER BY useful DESC " +
-                "LIMIT ?";
-
+        String sql = "SELECT r.* FROM reviews r WHERE r.film_id = ? ORDER BY r.useful DESC LIMIT ?";
         return jdbcTemplate.query(sql, reviewMapper, filmId, count);
     }
 
     @Override
     public List<Review> findAll(int count) {
-        String sql = "SELECT r.review_id, r.content, r.is_positive, r.user_id, r.film_id, " +
-                "COUNT(CASE WHEN rl.is_like = true THEN 1 END) as likes_count, " +
-                "COUNT(CASE WHEN rl.is_like = false THEN 1 END) as dislikes_count, " +
-                "(COUNT(CASE WHEN rl.is_like = true THEN 1 END) - " +
-                "COUNT(CASE WHEN rl.is_like = false THEN 1 END)) as useful " +
-                "FROM reviews r " +
-                "LEFT JOIN review_likes rl ON r.review_id = rl.review_id " +
-                "GROUP BY r.review_id, r.content, r.is_positive, r.user_id, r.film_id " +
-                "ORDER BY useful DESC " +
-                "LIMIT ?";
-
+        String sql = "SELECT r.* FROM reviews r ORDER BY r.useful DESC LIMIT ?";
         return jdbcTemplate.query(sql, reviewMapper, count);
     }
 
@@ -104,6 +86,7 @@ public class JdbcReviewRepository implements ReviewRepository {
 
         String insertSql = "INSERT INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, true)";
         jdbcTemplate.update(insertSql, reviewId, userId);
+        updateUseful(reviewId);
     }
 
     @Override
@@ -113,27 +96,30 @@ public class JdbcReviewRepository implements ReviewRepository {
 
         String insertSql = "INSERT INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, false)";
         jdbcTemplate.update(insertSql, reviewId, userId);
+        updateUseful(reviewId);
     }
 
     @Override
     public void removeLike(Long reviewId, Long userId) {
         String sql = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ? AND is_like = true";
         jdbcTemplate.update(sql, reviewId, userId);
+        updateUseful(reviewId);
     }
 
     @Override
     public void removeDislike(Long reviewId, Long userId) {
         String sql = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ? AND is_like = false";
         jdbcTemplate.update(sql, reviewId, userId);
+        updateUseful(reviewId);
     }
 
-    private String getReviewWithUsefulSql() {
-        return "SELECT r.*, " +
-                "COUNT(CASE WHEN rl.is_like = true THEN 1 END) as likes_count, " +
-                "COUNT(CASE WHEN rl.is_like = false THEN 1 END) as dislikes_count, " +
-                "(COUNT(CASE WHEN rl.is_like = true THEN 1 END) - " +
-                "COUNT(CASE WHEN rl.is_like = false THEN 1 END)) as useful " +
-                "FROM reviews r " +
-                "LEFT JOIN review_likes rl ON r.review_id = rl.review_id";
+    private void updateUseful(Long reviewId) {
+        String sql = "UPDATE reviews SET useful = (" +
+                "SELECT COALESCE(SUM(CASE WHEN is_like = true THEN 1 ELSE -1 END), 0) " +
+                "FROM review_likes " +
+                "WHERE review_id = ?" +
+                ") WHERE review_id = ?";
+
+        jdbcTemplate.update(sql, reviewId, reviewId);
     }
 }
