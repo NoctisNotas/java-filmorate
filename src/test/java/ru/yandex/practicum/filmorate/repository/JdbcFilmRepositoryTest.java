@@ -153,13 +153,10 @@ class JdbcFilmRepositoryTest {
         users1.add(1L);
         users1.add(3L);
         List<Film> films1 = filmRepository.getFilmsFromUsersThatLiked(users1);
-
-        assertThat(films1.size()).isEqualTo(3);
-
         List<Long> users2 = new ArrayList<>();
-
         List<Film> films2 = filmRepository.getFilmsFromUsersThatLiked(users2);
 
+        assertThat(films1.size()).isEqualTo(3);
         assertThat(films2.size()).isZero();
     }
 
