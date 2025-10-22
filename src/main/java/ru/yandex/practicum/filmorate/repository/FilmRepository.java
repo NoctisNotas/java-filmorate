@@ -24,6 +24,8 @@ public interface FilmRepository {
 
     boolean existsById(Long id);
 
+    void deleteById(Long id);
+}
     Collection<Film> findFilmsByDirectorSortedByLikes(long id);
 
     Collection<Film> findFilmsByDirectorSortedByYear(long id);
