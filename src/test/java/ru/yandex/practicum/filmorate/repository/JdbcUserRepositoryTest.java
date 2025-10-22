@@ -147,7 +147,8 @@ class JdbcUserRepositoryTest {
         boolean exists = userRepository.existsById(1L);
         assertThat(exists).isFalse();
     }
-}
+
+    @Test
     void testUserHasLike() {
         assertThat(userRepository.userHasLike(1L)).isTrue();
     }
