@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.mapper.FilmMapperWithMpaAndGenre;
 import ru.yandex.practicum.filmorate.mapper.GenreMapper;
 import ru.yandex.practicum.filmorate.mapper.MpaRatingMapper;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -15,10 +16,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         JdbcMpaRatingRepository.class,
         JdbcGenreRepository.class,
         FilmMapper.class,
+        FilmMapperWithMpaAndGenre.class,
         GenreMapper.class,
         MpaRatingMapper.class})
 class JdbcFilmRepositoryTest {
@@ -147,4 +146,28 @@ class JdbcFilmRepositoryTest {
                             .containsExactlyInAnyOrder(1L, 2L);
                 });
     }
+
+    @Test
+    void testGetFilmsFromUsersThatLiked() {
+        List<Long> users1 = new ArrayList<>();
+        users1.add(1L);
+        users1.add(3L);
+        List<Film> films1 = filmRepository.getFilmsFromUsersThatLiked(users1);
+
+        assertThat(films1.size()).isEqualTo(3);
+
+        List<Long> users2 = new ArrayList<>();
+        List<Film> films2 = filmRepository.getFilmsFromUsersThatLiked(users2);
+        assertThat(films2.size()).isZero();
+    }
+
+    @Test
+    void testGetFilmsFromUser() {
+        List<Long> films = filmRepository.getFilmsFromUser(1L);
+
+        assertThat(films.size()).isEqualTo(2);
+        assertThat(films.contains(1L)).isTrue();
+        assertThat(films.contains(2L)).isTrue();
+    }
+
 }
