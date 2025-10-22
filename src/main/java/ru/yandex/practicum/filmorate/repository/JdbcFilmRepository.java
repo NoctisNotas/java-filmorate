@@ -230,7 +230,7 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     @Override
-    public List<Film> getPopularFilms() {
+    public List<Film> searchPopularFilms() {
         String sql = "SELECT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
                 "fg.genre_id, g.name AS genre_name, fd.director_id, d.name AS director_name " +
                 "FROM films AS f " +

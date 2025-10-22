@@ -90,7 +90,7 @@ public class FilmService {
     public List<Film> searchFilms(String query, String by) {
         List<Film> films = new ArrayList<>();
         if (query == null || by == null) {
-            films = filmRepository.getPopularFilms();
+            films = filmRepository.searchPopularFilms();
         } else {
             String[] filters = by.split(",");
             List<String> filtersList = Arrays.asList(filters);

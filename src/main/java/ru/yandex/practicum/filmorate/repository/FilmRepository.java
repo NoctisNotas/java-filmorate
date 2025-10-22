@@ -38,5 +38,5 @@ public interface FilmRepository {
 
     List<Film> searchFilmsByTitle(String query);
 
-    List<Film> getPopularFilms();
+    List<Film> searchPopularFilms();
 }
