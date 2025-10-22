@@ -22,6 +22,8 @@ public interface FilmRepository {
 
     Collection<Film> findPopularFilms(int count);
 
+    Collection<Film> getCommonFilms(long userId, long friendId);
+
     boolean existsById(Long id);
 
     void deleteById(Long id);

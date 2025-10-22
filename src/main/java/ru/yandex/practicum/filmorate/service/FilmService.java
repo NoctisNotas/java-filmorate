@@ -71,6 +71,10 @@ public class FilmService {
         return filmRepository.findPopularFilms(count);
     }
 
+    public Collection<Film> getCommonFilms(long userId, long friendId) {
+        return filmRepository.getCommonFilms(userId, friendId);
+    }
+
     public Collection<Film> findFilmsByDirector(Long id, String sortBy) {
         if (!directorRepository.existsById(id)) {
             throw new NotFoundException("Режиссер с таким id: " + id + " не существует");
