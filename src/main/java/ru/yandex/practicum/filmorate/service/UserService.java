@@ -92,7 +92,7 @@ public class UserService {
         }
         userRepository.deleteById(id);
     }
-}
+
     public List<Film> getRecommendationsAboutFilms(Long id) {
         if (!userRepository.existsById(id)) {
             throw new NotFoundException("Пользователь с id " + id + " не найден");

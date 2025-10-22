@@ -67,11 +67,12 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
+    }
+
     @GetMapping("/{id}/recommendations")
     public List<Film> getRecommendations(@PathVariable Long id) {
         return userService.getRecommendationsAboutFilms(id);
     }
-
 
     @GetMapping("/{id}/feed")
     public Collection<FeedEvent> getFeedEvents(@PathVariable Long id) {
