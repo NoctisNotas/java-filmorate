@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -146,4 +147,19 @@ class JdbcUserRepositoryTest {
         boolean exists = userRepository.existsById(1L);
         assertThat(exists).isFalse();
     }
+}
+    void testUserHasLike() {
+        assertThat(userRepository.userHasLike(1L)).isTrue();
+    }
+
+    @Test
+    void testGetUsersWithSameLikes() {
+        List<Long> users = userRepository.getUsersWithSameLikes(3L);
+
+        assertThat(users.size()).isEqualTo(2);
+        assertThat(users.contains(2L)).isTrue();
+        assertThat(users.contains(4L)).isTrue();
+        assertThat(users.contains(3L)).isFalse();
+    }
+
 }

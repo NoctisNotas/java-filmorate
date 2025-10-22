@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -118,6 +119,32 @@ public class JdbcUserRepository implements UserRepository {
         String sql = "SELECT COUNT(*) FROM users WHERE user_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
+    }
+
+    @Override
+    public List<Long> getUsersWithSameLikes(Long id) {
+        String sql = "SELECT user_id, COUNT(film_id) AS likes FROM film_likes " +
+                "WHERE film_id IN (SELECT film_id FROM film_likes WHERE user_id = ?) " +
+                "AND user_id <> ? " +
+                "GROUP BY user_id " +
+                "ORDER BY COUNT(film_id) DESC ";
+        List<Map<String, Object>> results = jdbcTemplate.queryForList(sql, id, id);
+
+        List<Long> userId = new ArrayList<>();
+        if (!results.isEmpty()) {
+            Long maxLikes = (Long) results.get(0).get("likes");
+            userId = results.stream()
+                    .filter(row -> (Long) row.get("likes") == maxLikes)
+                    .map(row -> (Long) row.get("user_id"))
+                    .collect(Collectors.toList());
+        }
+        return userId;
+    }
+
+    @Override
+    public boolean userHasLike(Long id) {
+        String sql = "SELECT COUNT(*) FROM film_likes WHERE user_id = ?";
+        return jdbcTemplate.queryForObject(sql, Boolean.class, id);
     }
 
     private void loadUserFriends(User user) {
