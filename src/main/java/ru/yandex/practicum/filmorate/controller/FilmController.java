@@ -63,4 +63,5 @@ public class FilmController {
     public List<Film> searchFilms(@RequestParam(required = false) String query, @RequestParam(required = false) String by) {
         return filmService.searchFilms(query, by);
     }
+
 }
