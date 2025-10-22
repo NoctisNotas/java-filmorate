@@ -198,12 +198,19 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     @Override
-    public Collection<Film> findFilmsByDirectorSortedByYear(long id) {
-        String sql = "SELECT f.* FROM films AS f JOIN film_directors AS fd ON f.film_id = fd.film_id " +
-                "WHERE fd.director_id = ? ORDER BY f.release_date ASC;";
-        List<Film> films = jdbcTemplate.query(sql, filmMapper, id);
-        films.forEach(this::loadFilmGenres);
-        films.forEach(this::loadFilmDirectors);
+    public Collection<Film> findFilmsByDirectorSortedByYear(long directorId) {
+        String sql = "SELECT DISTINCT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
+                "fg.genre_id, g.name AS genre_name, fd.director_id, d.name AS director_name " +
+                "FROM films AS f " +
+                "JOIN mpa_ratings AS mr ON f.mpa_id = mr.mpa_id " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "JOIN directors AS d ON fd.director_id = d.director_id " +
+                "WHERE fd.director_id = ? " +
+                "ORDER BY f.release_date ASC";
+
+        List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, directorId);
         return films;
     }
 

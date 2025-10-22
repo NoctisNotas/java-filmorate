@@ -157,8 +157,8 @@ class JdbcFilmRepositoryTest {
         boolean exists = filmRepository.existsById(1L);
         assertThat(exists).isFalse();
     }
-  
-  @Test
+
+    @Test
     void testGetFilmsFromUsersThatLiked() {
         List<Long> users1 = new ArrayList<>();
         users1.add(1L);
