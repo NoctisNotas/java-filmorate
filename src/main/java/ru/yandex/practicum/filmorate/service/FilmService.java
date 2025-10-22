@@ -64,8 +64,8 @@ public class FilmService {
         filmRepository.removeLike(id, userId);
     }
 
-    public Collection<Film> getPopularFilms(int count) {
-        return filmRepository.findPopularFilms(count);
+    public Collection<Film> getPopularFilms(int count, Long genreId, Integer year) {
+        return filmRepository.findPopularFilms(count, genreId, year);
     }
 
     public Collection<Film> findFilmsByDirector(Long id, String sortBy) {

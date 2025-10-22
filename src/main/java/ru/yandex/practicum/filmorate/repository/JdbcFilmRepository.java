@@ -97,6 +97,47 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     @Override
+    public Collection<Film> findPopularFilms(int count, Long genreId, Integer year) {
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT f.* FROM films AS f " +
+                        "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id "
+        );
+
+        List<Object> params = new ArrayList<>();
+
+        List<String> whereClauses = new ArrayList<>();
+
+        if (genreId != null) {
+            sql.append("JOIN film_genres AS fg ON f.film_id = fg.film_id ");
+            whereClauses.add("fg.genre_id = ?");
+            params.add(genreId);
+        }
+
+        if (year != null) {
+            whereClauses.add("EXTRACT(YEAR FROM f.release_date) = ?");
+            params.add(year);
+        }
+
+        if (!whereClauses.isEmpty()) {
+            sql.append("WHERE ").append(String.join(" AND ", whereClauses));
+        }
+
+        sql.append(" GROUP BY f.film_id ORDER BY COUNT(fl.user_id) DESC LIMIT ?");
+        params.add(count);
+
+        List<Film> films = jdbcTemplate.query(sql.toString(), filmMapper, params.toArray());
+
+        films.forEach(film -> {
+            loadFilmGenres(film);
+            loadFilmDirectors(film);
+            loadMpaDetails(film);
+        });
+
+        return films;
+    }
+
+    @Override
     public void addLike(Long filmId, Long userId) {
         String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
