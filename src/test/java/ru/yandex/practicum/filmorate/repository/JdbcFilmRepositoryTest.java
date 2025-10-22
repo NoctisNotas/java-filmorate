@@ -170,4 +170,40 @@ class JdbcFilmRepositoryTest {
         assertThat(films.contains(2L)).isTrue();
     }
 
+    @Test
+    void testSearchFilmsByDirectorAndTitle() {
+        List<Film> films = filmRepository.searchFilmsByDirectorAndTitle("Two");
+
+        assertThat(films.size()).isEqualTo(2);
+
+        boolean filmFoundByName = films.stream()
+                .anyMatch(film -> film.getName().contains("Two"));
+        assertThat(filmFoundByName).isTrue();
+
+        boolean filmFoundByDirector = films.stream()
+                .anyMatch(film -> film.getDirectors().stream()
+                        .anyMatch(director -> director.getName().contains("Two")));
+        assertThat(filmFoundByDirector).isTrue();
+    }
+
+
+    @Test
+    void testSearchFilmsByDirector() {
+        List<Film> films = filmRepository.searchFilmsByDirector("Two");
+        assertThat(films.size()).isEqualTo(1);
+        boolean filmFoundByDirector = films.stream()
+                .anyMatch(film -> film.getDirectors().stream()
+                        .anyMatch(director -> director.getName().contains("Two")));
+        assertThat(filmFoundByDirector).isTrue();
+    }
+
+    @Test
+    void testSearchFilmsByTitle() {
+        List<Film> films = filmRepository.searchFilmsByTitle("One");
+        assertThat(films.size()).isEqualTo(1);
+        boolean filmFoundByName = films.stream()
+                .anyMatch(film -> film.getName().contains("One"));
+        assertThat(filmFoundByName).isTrue();
+    }
+
 }

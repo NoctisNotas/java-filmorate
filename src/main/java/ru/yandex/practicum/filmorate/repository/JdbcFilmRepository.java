@@ -143,11 +143,14 @@ public class JdbcFilmRepository implements FilmRepository {
         if (userId == null || userId.isEmpty()) {
             return Collections.emptyList();
         }
-        String sql = "SELECT f.*, m.name AS mpa_name, m.description AS mpa_desc, fg.genre_id, g.name AS genre_name " +
+        String sql = "SELECT f.*, m.name AS mpa_name, m.description AS mpa_desc, " +
+                "fg.genre_id, g.name AS genre_name, fd.director_id, d.name AS director_name " +
                 "FROM films AS f " +
                 "JOIN mpa_ratings AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
                 "JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
                 "WHERE f.film_id IN (SELECT DISTINCT fl.film_id FROM film_likes AS fl WHERE fl.user_id IN (" +
                 String.join(",", Collections.nCopies(userId.size(), "?")) +
                 ")) ORDER BY f.film_id";
@@ -172,81 +175,76 @@ public class JdbcFilmRepository implements FilmRepository {
         return jdbcTemplate.queryForList(sql, Long.class, id);
     }
 
-    public List<Film> searchFilmsByDirectorAndTitle(String query, List<String> by) {
-        String sql = "SELECT f.*, d.name FROM films AS f " +
-                "JOIN film_directors AS fd ON f.film_id = fd.film_id " +
-                "JOIN directors AS d ON fd.director_id = d.director_id " +
+    @Override
+    public List<Film> searchFilmsByDirectorAndTitle(String query) {
+        String sql = "SELECT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
+                "fg.genre_id, g.name AS genre_name, fd.director_id, d.name AS director_name " +
+                "FROM films AS f " +
+                "JOIN mpa_ratings AS mr ON f.mpa_id = mr.mpa_id " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
                 "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
-                "WHERE f.name ILIKE '%?%' OR d.name ILIKE '%?%' " +
-                "GROUP BY f.film_id " +
+                "WHERE f.name ILIKE ? OR d.name ILIKE ? " +
+                "GROUP BY f.film_id, fg.genre_id " +
                 "ORDER BY COUNT(fl.user_id) DESC";
-        List<Film> films = jdbcTemplate.query(sql, filmMapper, query, query);
+        List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, "%" + query + "%", "%" + query + "%");
         return films;
     }
 
-    public List<Film> searchFilmsByDirector(String query, List<String> by) {
-        String sql = "SELECT f.*, d.name FROM films AS f " +
-                "JOIN film_directors AS fd ON f.film_id = fd.film_id " +
-                "JOIN directors AS d ON fd.director_id = d.director_id " +
+    @Override
+    public List<Film> searchFilmsByDirector(String query) {
+        String sql = "SELECT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
+                "fg.genre_id, g.name AS genre_name, fd.director_id, d.name AS director_name " +
+                "FROM films AS f " +
+                "JOIN mpa_ratings AS mr ON f.mpa_id = mr.mpa_id " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
                 "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
-                "WHERE d.name ILIKE '%?%' " +
-                "GROUP BY f.film_id " +
+                "WHERE d.name ILIKE ? " +
+                "GROUP BY f.film_id, fg.genre_id " +
                 "ORDER BY COUNT(fl.user_id) DESC";
-        List<Film> films = jdbcTemplate.query(sql, filmMapper, query);
+        List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, "%" + query + "%");
         return films;
     }
 
-    public List<Film> searchFilmsByTitle(String query, List<String> by) {
-        String sql = "SELECT f.*, d.name FROM films AS f " +
-                "JOIN film_directors AS fd ON f.film_id = fd.film_id " +
-                "JOIN directors AS d ON fd.director_id = d.director_id " +
+    @Override
+    public List<Film> searchFilmsByTitle(String query) {
+        String sql = "SELECT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
+                "fg.genre_id, g.name AS genre_name, fd.director_id, d.name AS director_name " +
+                "FROM films AS f " +
+                "JOIN mpa_ratings AS mr ON f.mpa_id = mr.mpa_id " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
                 "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
-                "WHERE f.name ILIKE '%?%' " +
-                "GROUP BY f.film_id " +
+                "WHERE f.name ILIKE ? " +
+                "GROUP BY f.film_id, fg.genre_id " +
                 "ORDER BY COUNT(fl.user_id) DESC";
-        List<Film> films = jdbcTemplate.query(sql, filmMapper, query);
+        List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, "%" + query + "%");
         return films;
     }
 
-
-
-    public List<Film> searchFilmsByDirectorAndTitle(String query, List<String> by) {
-        String sql = "SELECT f.*, d.name FROM films AS f " +
-                "JOIN film_directors AS fd ON f.film_id = fd.film_id " +
-                "JOIN directors AS d ON fd.director_id = d.director_id " +
+    @Override
+    public List<Film> getPopularFilms() {
+        String sql = "SELECT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
+                "fg.genre_id, g.name AS genre_name, fd.director_id, d.name AS director_name " +
+                "FROM films AS f " +
+                "JOIN mpa_ratings AS mr ON f.mpa_id = mr.mpa_id " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
                 "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
-                "WHERE f.name ILIKE '%?%' OR d.name ILIKE '%?%' " +
-                "GROUP BY f.film_id " +
+                "GROUP BY f.film_id, fg.genre_id " +
                 "ORDER BY COUNT(fl.user_id) DESC";
-        List<Film> films = jdbcTemplate.query(sql, filmMapper, query, query);
+        List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre);
         return films;
     }
-
-    public List<Film> searchFilmsByDirector(String query, List<String> by) {
-        String sql = "SELECT f.*, d.name FROM films AS f " +
-                "JOIN film_directors AS fd ON f.film_id = fd.film_id " +
-                "JOIN directors AS d ON fd.director_id = d.director_id " +
-                "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
-                "WHERE d.name ILIKE '%?%' " +
-                "GROUP BY f.film_id " +
-                "ORDER BY COUNT(fl.user_id) DESC";
-        List<Film> films = jdbcTemplate.query(sql, filmMapper, query);
-        return films;
-    }
-
-    public List<Film> searchFilmsByTitle(String query, List<String> by) {
-        String sql = "SELECT f.*, d.name FROM films AS f " +
-                "JOIN film_directors AS fd ON f.film_id = fd.film_id " +
-                "JOIN directors AS d ON fd.director_id = d.director_id " +
-                "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
-                "WHERE f.name ILIKE '%?%' " +
-                "GROUP BY f.film_id " +
-                "ORDER BY COUNT(fl.user_id) DESC";
-        List<Film> films = jdbcTemplate.query(sql, filmMapper, query);
-        return films;
-    }
-
-
 
     private void loadFilmGenres(Film film) {
         String sql = "SELECT g.genre_id, g.name FROM film_genres fg " +
@@ -267,7 +265,7 @@ public class JdbcFilmRepository implements FilmRepository {
         String sql = "SELECT d.director_id, d.name FROM film_directors fd JOIN directors d ON" +
                 " fd.director_id = d.director_id WHERE fd.film_id = ? ORDER BY d.director_id";
 
-        List<Director> directors = jdbcTemplate.query(sql,(rs, rowNum) -> {
+        List<Director> directors = jdbcTemplate.query(sql, (rs, rowNum) -> {
             Director director = new Director();
             director.setId(rs.getLong("director_id"));
             director.setName(rs.getString("name"));

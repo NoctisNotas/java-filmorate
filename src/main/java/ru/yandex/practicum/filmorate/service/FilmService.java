@@ -10,7 +10,10 @@ import ru.yandex.practicum.filmorate.repository.DirectorRepository;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -79,6 +82,24 @@ public class FilmService {
         } else {
             throw new IllegalArgumentException("Неверный параметр sortBy: " + sortBy);
         }
+    }
+
+    public List<Film> searchFilms(String query, String by) {
+        List<Film> films = new ArrayList<>();
+        if (query == null || by == null) {
+            films = filmRepository.getPopularFilms();
+        } else {
+            String[] filters = by.split(",");
+            List<String> filtersList = Arrays.asList(filters);
+            if (filtersList.contains("director") && filtersList.contains("title")) {
+                films = filmRepository.searchFilmsByDirectorAndTitle(query);
+            } else if (filtersList.contains("director") && filtersList.size() == 1) {
+                films = filmRepository.searchFilmsByDirector(query);
+            } else if (filtersList.contains("title") && filtersList.size() == 1) {
+                films = filmRepository.searchFilmsByTitle(query);
+            }
+        }
+        return films;
     }
 
     private void validateMpaRating(Film film) {

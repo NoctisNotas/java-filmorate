@@ -41,3 +41,12 @@ INSERT INTO friendship (user_id, friend_id, status) VALUES
 (1, 3, 'PENDING'),
 (2, 3, 'CONFIRMED'),
 (2, 4, 'CONFIRMED');
+
+INSERT INTO directors (director_id, name) VALUES
+(1, 'Director One'),
+(2, 'Director Two'),
+(3, 'Director Three');
+
+INSERT INTO film_directors (film_id, director_id) VALUES
+(1, 2),
+(2, 3);

@@ -31,4 +31,12 @@ public interface FilmRepository {
     List<Film> getFilmsFromUsersThatLiked(List<Long> id);
 
     List<Long> getFilmsFromUser(Long id);
+
+    List<Film> searchFilmsByDirectorAndTitle(String query);
+
+    List<Film> searchFilmsByDirector(String query);
+
+    List<Film> searchFilmsByTitle(String query);
+
+    List<Film> getPopularFilms();
 }
