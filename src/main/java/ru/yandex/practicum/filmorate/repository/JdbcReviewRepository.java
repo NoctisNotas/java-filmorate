@@ -83,10 +83,16 @@ public class JdbcReviewRepository implements ReviewRepository {
 
     @Override
     public List<Review> findAll(int count) {
-        String sql = getReviewWithUsefulSql() +
-                " GROUP BY r.review_id " +
-                " ORDER BY useful DESC " +
-                " LIMIT ?";
+        String sql = "SELECT r.review_id, r.content, r.is_positive, r.user_id, r.film_id, " +
+                "COUNT(CASE WHEN rl.is_like = true THEN 1 END) as likes_count, " +
+                "COUNT(CASE WHEN rl.is_like = false THEN 1 END) as dislikes_count, " +
+                "(COUNT(CASE WHEN rl.is_like = true THEN 1 END) - " +
+                "COUNT(CASE WHEN rl.is_like = false THEN 1 END)) as useful " +
+                "FROM reviews r " +
+                "LEFT JOIN review_likes rl ON r.review_id = rl.review_id " +
+                "GROUP BY r.review_id, r.content, r.is_positive, r.user_id, r.film_id " +
+                "ORDER BY useful DESC " +
+                "LIMIT ?";
 
         return jdbcTemplate.query(sql, reviewMapper, count);
     }

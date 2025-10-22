@@ -36,6 +36,7 @@ public class JdbcFilmRepository implements FilmRepository {
         List<Film> films = jdbcTemplate.query(sql, filmMapper);
         films.forEach(this::loadFilmGenres);
         films.forEach(this::loadFilmDirectors);
+        films.forEach(this::loadMpaDetails);
         return films;
     }
 
