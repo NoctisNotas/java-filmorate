@@ -101,6 +101,13 @@ public class FilmService {
         }
     }
 
+    public void deleteFilm(Long id) {
+        if (!filmRepository.existsById(id)) {
+            throw new NotFoundException("Фильм с id = " + id + " не найден");
+        }
+        filmRepository.deleteById(id);
+    }
+
     private void validateDirectors(Film film) {
         if (film.getDirectors() != null) {
             film.getDirectors().forEach(director -> directorService.getDirector(director.getId()));
