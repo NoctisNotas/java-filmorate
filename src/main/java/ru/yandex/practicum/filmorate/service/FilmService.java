@@ -10,10 +10,7 @@ import ru.yandex.practicum.filmorate.repository.DirectorRepository;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -92,21 +89,47 @@ public class FilmService {
     }
 
     public List<Film> searchFilms(String query, String by) {
-        List<Film> films = new ArrayList<>();
-        if (query == null || by == null) {
-            films = filmRepository.searchPopularFilms();
+        log.info("Search films - query: '{}', by: '{}'", query, by);
+
+        if (query == null || query.isBlank()) {
+            log.info("Empty query, returning popular films");
+            List<Film> popularFilms = new ArrayList<>(filmRepository.searchPopularFilms());
+            popularFilms.sort(Comparator.comparing(Film::getId).reversed());
+            return popularFilms;
+        }
+
+        String searchQuery = query.toLowerCase().trim();
+        log.info("Processed search query: '{}'", searchQuery);
+
+        List<Film> result;
+
+        if (by == null || by.isBlank()) {
+            log.info("Searching by title only");
+            result = filmRepository.searchFilmsByTitle(searchQuery);
         } else {
             String[] filters = by.split(",");
             List<String> filtersList = Arrays.asList(filters);
+            log.info("Search filters: {}", filtersList);
+
             if (filtersList.contains("director") && filtersList.contains("title")) {
-                films = filmRepository.searchFilmsByDirectorAndTitle(query);
-            } else if (filtersList.contains("director") && filtersList.size() == 1) {
-                films = filmRepository.searchFilmsByDirector(query);
-            } else if (filtersList.contains("title") && filtersList.size() == 1) {
-                films = filmRepository.searchFilmsByTitle(query);
+                log.info("Searching by director AND title");
+                result = filmRepository.searchFilmsByDirectorAndTitle(searchQuery);
+            } else if (filtersList.contains("director")) {
+                log.info("Searching by director only");
+                result = filmRepository.searchFilmsByDirector(searchQuery);
+            } else if (filtersList.contains("title")) {
+                log.info("Searching by title only");
+                result = filmRepository.searchFilmsByTitle(searchQuery);
+            } else {
+                log.info("No valid filters, searching by title");
+                result = filmRepository.searchFilmsByTitle(searchQuery);
             }
         }
-        return films;
+
+        result.sort(Comparator.comparing(Film::getId).reversed());
+        log.info("Found {} films for query '{}'", result.size(), query);
+
+        return result;
     }
 
     private void validateMpaRating(Film film) {

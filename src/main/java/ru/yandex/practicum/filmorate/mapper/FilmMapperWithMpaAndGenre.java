@@ -34,7 +34,11 @@ public class FilmMapperWithMpaAndGenre implements ResultSetExtractor<List<Film>>
                 currentFilm.setId(rs.getLong("film_id"));
                 currentFilm.setName(rs.getString("name"));
                 currentFilm.setDescription(rs.getString("description"));
-                currentFilm.setReleaseDate(rs.getDate("release_date").toLocalDate());
+
+                if (rs.getDate("release_date") != null) {
+                    currentFilm.setReleaseDate(rs.getDate("release_date").toLocalDate());
+                }
+
                 currentFilm.setDuration(rs.getInt("duration"));
 
                 MpaRating newMpa = new MpaRating();
@@ -46,18 +50,32 @@ public class FilmMapperWithMpaAndGenre implements ResultSetExtractor<List<Film>>
                 currentFilm.setGenres(new LinkedHashSet<>());
                 currentFilm.setDirectors(new LinkedHashSet<>());
             }
-            Genre newGenre = new Genre();
-            newGenre.setId(rs.getLong("genre_id"));
-            newGenre.setName(rs.getString("genre_name"));
-            currentFilm.getGenres().add(newGenre);
 
-            if (rs.getObject("director_id") != null) {
+            Long genreId = rs.getLong("genre_id");
+            if (!rs.wasNull() && genreId != 0) {
+                Genre newGenre = new Genre();
+                newGenre.setId(genreId);
+                newGenre.setName(rs.getString("genre_name"));
+                boolean genreExists = currentFilm.getGenres().stream()
+                        .anyMatch(genre -> genre.getId().equals(genreId));
+                if (!genreExists) {
+                    currentFilm.getGenres().add(newGenre);
+                }
+            }
+
+            Long directorId = rs.getLong("director_id");
+            if (!rs.wasNull() && directorId != 0) {
                 Director director = new Director();
-                director.setId(rs.getLong("director_id"));
+                director.setId(directorId);
                 director.setName(rs.getString("director_name"));
-                currentFilm.getDirectors().add(director);
+                boolean directorExists = currentFilm.getDirectors().stream()
+                        .anyMatch(dir -> dir.getId().equals(directorId));
+                if (!directorExists) {
+                    currentFilm.getDirectors().add(director);
+                }
             }
         }
+
         if (currentFilm != null) {
             films.add(currentFilm);
         }

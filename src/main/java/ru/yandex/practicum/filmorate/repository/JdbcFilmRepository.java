@@ -245,73 +245,68 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public List<Film> searchFilmsByDirectorAndTitle(String query) {
-        String sql = "SELECT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
+        String sql = "SELECT DISTINCT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
                 "fg.genre_id, g.name AS genre_name, fd.director_id, d.name AS director_name " +
                 "FROM films AS f " +
                 "JOIN mpa_ratings AS mr ON f.mpa_id = mr.mpa_id " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
-                "JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
-                "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
-                "WHERE f.name ILIKE ? OR d.name ILIKE ? " +
-                "GROUP BY f.film_id, fg.genre_id " +
-                "ORDER BY COUNT(fl.user_id) DESC";
-        List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, "%" + query + "%", "%" + query + "%");
-        return films;
+                "WHERE LOWER(f.name) LIKE LOWER(?) OR LOWER(d.name) LIKE LOWER(?) " +
+                "ORDER BY f.film_id DESC";
+
+        String searchPattern = "%" + query + "%";
+        return jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, searchPattern, searchPattern);
     }
 
     @Override
     public List<Film> searchFilmsByDirector(String query) {
-        String sql = "SELECT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
+        String sql = "SELECT DISTINCT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
                 "fg.genre_id, g.name AS genre_name, fd.director_id, d.name AS director_name " +
                 "FROM films AS f " +
                 "JOIN mpa_ratings AS mr ON f.mpa_id = mr.mpa_id " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
-                "JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
-                "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
-                "WHERE d.name ILIKE ? " +
-                "GROUP BY f.film_id, fg.genre_id " +
-                "ORDER BY COUNT(fl.user_id) DESC";
-        List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, "%" + query + "%");
-        return films;
+                "WHERE LOWER(d.name) LIKE LOWER(?) " +
+                "ORDER BY f.film_id DESC";
+
+        String searchPattern = "%" + query + "%";
+        return jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, searchPattern);
     }
 
     @Override
     public List<Film> searchFilmsByTitle(String query) {
-        String sql = "SELECT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
+        String sql = "SELECT DISTINCT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
                 "fg.genre_id, g.name AS genre_name, fd.director_id, d.name AS director_name " +
                 "FROM films AS f " +
                 "JOIN mpa_ratings AS mr ON f.mpa_id = mr.mpa_id " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
-                "JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
-                "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
-                "WHERE f.name ILIKE ? " +
-                "GROUP BY f.film_id, fg.genre_id " +
-                "ORDER BY COUNT(fl.user_id) DESC";
-        List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, "%" + query + "%");
-        return films;
+                "WHERE LOWER(f.name) LIKE LOWER(?) " +
+                "ORDER BY f.film_id DESC";
+
+        String searchPattern = "%" + query + "%";
+        return jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, searchPattern);
     }
 
     @Override
     public List<Film> searchPopularFilms() {
-        String sql = "SELECT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
+        String sql = "SELECT DISTINCT f.*, mr.name AS mpa_name, mr.description AS mpa_desc, " +
                 "fg.genre_id, g.name AS genre_name, fd.director_id, d.name AS director_name " +
                 "FROM films AS f " +
                 "JOIN mpa_ratings AS mr ON f.mpa_id = mr.mpa_id " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
-                "JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
-                "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
-                "GROUP BY f.film_id, fg.genre_id " +
-                "ORDER BY COUNT(fl.user_id) DESC";
-        List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre);
-        return films;
+                "ORDER BY f.film_id DESC";
+
+        return jdbcTemplate.query(sql, filmMapperWithMpaAndGenre);
     }
 
     private void loadFilmGenres(Film film) {
