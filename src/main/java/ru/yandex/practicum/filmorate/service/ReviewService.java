@@ -25,6 +25,10 @@ public class ReviewService {
         review = reviewRepository.save(review);
         feedService.addFeedEvent(review.getUserId(), "REVIEW", "ADD", review.getReviewId());
         return review;
+
+    public Review create(Review review) {
+        validateUserAndFilm(review.getUserId(), review.getFilmId());
+        return reviewRepository.save(review);
     }
 
     public Review update(Review review) {
@@ -45,6 +49,14 @@ public class ReviewService {
         Review review = optionalReview.get();
         reviewRepository.deleteById(id);
         feedService.addFeedEvent(review.getUserId(), "REVIEW", "REMOVE", id);
+        return reviewRepository.update(review);
+    }
+
+    public void delete(Long id) {
+        if (!reviewRepository.findById(id).isPresent()) {
+            throw new NotFoundException("Отзыв с id = " + id + " не найден");
+        }
+        reviewRepository.deleteById(id);
     }
 
     public Review getById(Long id) {
