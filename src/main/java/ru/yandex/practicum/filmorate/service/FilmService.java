@@ -67,8 +67,8 @@ public class FilmService {
         feedService.addFeedEvent(userId, "LIKE", "REMOVE", id);
     }
 
-    public Collection<Film> getPopularFilms(int count) {
-        return filmRepository.findPopularFilms(count);
+    public Collection<Film> getPopularFilms(int count, Long genreId, Integer year) {
+        return filmRepository.findPopularFilms(count, genreId, year);
     }
 
     public Collection<Film> getCommonFilms(long userId, long friendId) {
