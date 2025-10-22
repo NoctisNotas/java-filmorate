@@ -70,8 +70,12 @@ public class FilmService {
         feedService.addFeedEvent(userId, "LIKE", "REMOVE", id);
     }
 
-    public Collection<Film> getPopularFilms(int count) {
-        return filmRepository.findPopularFilms(count);
+    public Collection<Film> getPopularFilms(int count, Long genreId, Integer year) {
+        return filmRepository.findPopularFilms(count, genreId, year);
+    }
+
+    public Collection<Film> getCommonFilms(long userId, long friendId) {
+        return filmRepository.getCommonFilms(userId, friendId);
     }
 
     public Collection<Film> findFilmsByDirector(Long id, String sortBy) {
@@ -116,6 +120,13 @@ public class FilmService {
         if (film.getGenres() != null) {
             film.getGenres().forEach(genre -> genreService.getGenre(genre.getId()));
         }
+    }
+
+    public void deleteFilm(Long id) {
+        if (!filmRepository.existsById(id)) {
+            throw new NotFoundException("Фильм с id = " + id + " не найден");
+        }
+        filmRepository.deleteById(id);
     }
 
     private void validateDirectors(Film film) {

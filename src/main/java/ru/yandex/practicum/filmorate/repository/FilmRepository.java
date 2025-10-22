@@ -20,9 +20,15 @@ public interface FilmRepository {
 
     void removeLike(Long filmId, Long userId);
 
-    Collection<Film> findPopularFilms(int count);
+    Collection<Film> findPopularFilms(int count, Long genreId, Integer year);
+
+    public Collection<Film> findPopularFilms(int count);
+
+    Collection<Film> getCommonFilms(long userId, long friendId);
 
     boolean existsById(Long id);
+
+    void deleteById(Long id);
 
     Collection<Film> findFilmsByDirectorSortedByLikes(long id);
 

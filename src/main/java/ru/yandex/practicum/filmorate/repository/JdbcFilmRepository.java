@@ -97,6 +97,47 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     @Override
+    public Collection<Film> findPopularFilms(int count, Long genreId, Integer year) {
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT f.* FROM films AS f " +
+                        "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id "
+        );
+
+        List<Object> params = new ArrayList<>();
+
+        List<String> whereClauses = new ArrayList<>();
+
+        if (genreId != null) {
+            sql.append("JOIN film_genres AS fg ON f.film_id = fg.film_id ");
+            whereClauses.add("fg.genre_id = ?");
+            params.add(genreId);
+        }
+
+        if (year != null) {
+            whereClauses.add("EXTRACT(YEAR FROM f.release_date) = ?");
+            params.add(year);
+        }
+
+        if (!whereClauses.isEmpty()) {
+            sql.append("WHERE ").append(String.join(" AND ", whereClauses));
+        }
+
+        sql.append(" GROUP BY f.film_id ORDER BY COUNT(fl.user_id) DESC LIMIT ?");
+        params.add(count);
+
+        List<Film> films = jdbcTemplate.query(sql.toString(), filmMapper, params.toArray());
+
+        films.forEach(film -> {
+            loadFilmGenres(film);
+            loadFilmDirectors(film);
+            loadMpaDetails(film);
+        });
+
+        return films;
+    }
+
+    @Override
     public void addLike(Long filmId, Long userId) {
         String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
@@ -119,6 +160,32 @@ public class JdbcFilmRepository implements FilmRepository {
         List<Film> films = jdbcTemplate.query(sql, filmMapper, count);
         films.forEach(this::loadFilmGenres);
         films.forEach(this::loadFilmDirectors);
+        return films;
+    }
+
+    @Override
+    public Collection<Film> getCommonFilms(long userId, long friendId) {
+        String sql = """
+                SELECT cf.*,
+                       m.name AS mpa_name,
+                       m.description AS mpa_desc,
+                       fg.genre_id,
+                       g.name AS genre_name
+                FROM
+                  (SELECT f.*,
+                          COUNT(fl1.user_id)
+                   FROM films f
+                   JOIN film_likes fl1 ON f.film_id = fl1.film_id
+                   JOIN film_likes fl2 ON fl1.film_id = fl2.film_id
+                   JOIN film_likes fl3 ON fl1.film_id = fl3.film_id
+                   WHERE fl1.user_id = ?
+                     AND fl2.user_id = ?
+                   GROUP BY f.film_id
+                   ORDER BY COUNT(fl1.user_id) DESC) cf
+                JOIN mpa_ratings AS m ON cf.mpa_id = m.mpa_id
+                LEFT JOIN film_genres AS fg ON cf.film_id = fg.film_id
+                JOIN genres AS g ON fg.genre_id = g.genre_id""";
+        List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, userId, friendId);
         return films;
     }
 
@@ -349,6 +416,12 @@ public class JdbcFilmRepository implements FilmRepository {
         jdbcTemplate.update(deleteSql, film.getId());
 
         saveFilmGenres(film);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        String deleteFilmSql = "DELETE FROM films WHERE film_id = ?";
+        jdbcTemplate.update(deleteFilmSql, id);
     }
 
     private void updateFilmDirectors(Film film) {
