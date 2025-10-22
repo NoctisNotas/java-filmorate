@@ -158,6 +158,7 @@ class JdbcFilmRepositoryTest {
 
         List<Long> users2 = new ArrayList<>();
         List<Film> films2 = filmRepository.getFilmsFromUsersThatLiked(users2);
+
         assertThat(films2.size()).isZero();
     }
 
