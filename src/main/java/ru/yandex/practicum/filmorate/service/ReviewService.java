@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.repository.UserRepository;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,13 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
+    private final FeedService feedService;
+
+    public Review create(Review review) {
+        validateUserAndFilm(review.getUserId(), review.getFilmId());
+        review = reviewRepository.save(review);
+        feedService.addFeedEvent(review.getUserId(), "REVIEW", "ADD", review.getReviewId());
+        return review;
 
     public Review create(Review review) {
         validateUserAndFilm(review.getUserId(), review.getFilmId());
@@ -28,6 +36,19 @@ public class ReviewService {
             throw new NotFoundException("Отзыв с id = " + review.getReviewId() + " не найден");
         }
         validateUserAndFilm(review.getUserId(), review.getFilmId());
+        review = reviewRepository.update(review);
+        feedService.addFeedEvent(review.getUserId(), "REVIEW", "UPDATE", review.getReviewId());
+        return review;
+    }
+
+    public void delete(Long id) {
+        Optional<Review> optionalReview = reviewRepository.findById(id);
+        if (!optionalReview.isPresent()) {
+            throw new NotFoundException("Отзыв с id = " + id + " не найден");
+        }
+        Review review = optionalReview.get();
+        reviewRepository.deleteById(id);
+        feedService.addFeedEvent(review.getUserId(), "REVIEW", "REMOVE", id);
         return reviewRepository.update(review);
     }
 
@@ -56,21 +77,25 @@ public class ReviewService {
     public void addLike(Long reviewId, Long userId) {
         validateReviewAndUser(reviewId, userId);
         reviewRepository.addLike(reviewId, userId);
+        feedService.addFeedEvent(userId, "REVIEW", "UPDATE", reviewId);
     }
 
     public void addDislike(Long reviewId, Long userId) {
         validateReviewAndUser(reviewId, userId);
         reviewRepository.addDislike(reviewId, userId);
+        feedService.addFeedEvent(userId, "REVIEW", "UPDATE", reviewId);
     }
 
     public void removeLike(Long reviewId, Long userId) {
         validateReviewAndUser(reviewId, userId);
         reviewRepository.removeLike(reviewId, userId);
+        feedService.addFeedEvent(userId, "REVIEW", "UPDATE", reviewId);
     }
 
     public void removeDislike(Long reviewId, Long userId) {
         validateReviewAndUser(reviewId, userId);
         reviewRepository.removeDislike(reviewId, userId);
+        feedService.addFeedEvent(userId, "REVIEW", "UPDATE", reviewId);
     }
 
     private void validateUserAndFilm(Long userId, Long filmId) {

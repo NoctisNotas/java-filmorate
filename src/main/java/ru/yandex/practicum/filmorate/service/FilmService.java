@@ -21,6 +21,7 @@ public class FilmService {
     private final DirectorRepository directorRepository;
     private final MpaRatingService mpaRatingService;
     private final GenreService genreService;
+    private final FeedService feedService;
     private final DirectorService directorService;
 
     public Collection<Film> getAll() {
@@ -55,6 +56,7 @@ public class FilmService {
             throw new NotFoundException("Пользователя с таким id: " + userId + " не существует");
         }
         filmRepository.addLike(id, userId);
+        feedService.addFeedEvent(userId, "LIKE", "ADD", id);
     }
 
     public void removeLike(Long id, Long userId) {
@@ -62,6 +64,7 @@ public class FilmService {
             throw new NotFoundException("Пользователя с таким id: " + userId + " не существует");
         }
         filmRepository.removeLike(id, userId);
+        feedService.addFeedEvent(userId, "LIKE", "REMOVE", id);
     }
 
     public Collection<Film> getPopularFilms(int count) {
