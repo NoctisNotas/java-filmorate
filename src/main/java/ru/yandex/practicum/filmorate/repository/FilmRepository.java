@@ -24,7 +24,11 @@ public interface FilmRepository {
 
     public Collection<Film> findPopularFilms(int count);
 
+    Collection<Film> getCommonFilms(long userId, long friendId);
+
     boolean existsById(Long id);
+
+    void deleteById(Long id);
 
     Collection<Film> findFilmsByDirectorSortedByLikes(long id);
 

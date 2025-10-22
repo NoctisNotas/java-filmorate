@@ -148,6 +148,15 @@ class JdbcFilmRepositoryTest {
     }
 
     @Test
+    void testDeleteFilm() {
+        filmRepository.deleteById(1L);
+
+        Optional<Film> filmAfterDelete = filmRepository.findById(1L);
+        assertThat(filmAfterDelete).isEmpty();
+
+        boolean exists = filmRepository.existsById(1L);
+        assertThat(exists).isFalse();
+    }
     void testGetFilmsFromUsersThatLiked() {
         List<Long> users1 = new ArrayList<>();
         users1.add(1L);
@@ -170,4 +179,11 @@ class JdbcFilmRepositoryTest {
         assertThat(films.contains(2L)).isTrue();
     }
 
+    @Test
+    void testGetCommonFilms() {
+        Collection<Film> commonFilms = filmRepository.getCommonFilms(1, 2);
+
+        assertThat(commonFilms).hasSize(1);
+        assertThat(commonFilms.iterator().next().getId()).isEqualTo(1L);
+    }
 }

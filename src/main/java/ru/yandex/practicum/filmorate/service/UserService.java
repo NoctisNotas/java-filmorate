@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final FeedService feedService;
     private final FilmRepository filmRepository;
 
     public Collection<User> getAll() {
@@ -51,6 +52,7 @@ public class UserService {
             throw new NotFoundException("Пользователь с id " + friendId + " не найден");
         }
         userRepository.addFriend(id, friendId);
+        feedService.addFeedEvent(id, "FRIEND", "ADD", friendId);
     }
 
     public void deleteFriend(Long id, Long friendId) {
@@ -62,6 +64,7 @@ public class UserService {
         }
 
         userRepository.removeFriend(id, friendId);
+        feedService.addFeedEvent(id, "FRIEND", "REMOVE", friendId);
     }
 
     public Collection<User> getFriends(Long id) {
@@ -81,6 +84,13 @@ public class UserService {
         }
 
         return userRepository.findCommonFriends(id, otherUserId);
+    }
+
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        }
+        userRepository.deleteById(id);
     }
 
     public List<Film> getRecommendationsAboutFilms(Long id) {

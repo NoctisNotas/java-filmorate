@@ -164,6 +164,32 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     @Override
+    public Collection<Film> getCommonFilms(long userId, long friendId) {
+        String sql = """
+                SELECT cf.*,
+                       m.name AS mpa_name,
+                       m.description AS mpa_desc,
+                       fg.genre_id,
+                       g.name AS genre_name
+                FROM
+                  (SELECT f.*,
+                          COUNT(fl1.user_id)
+                   FROM films f
+                   JOIN film_likes fl1 ON f.film_id = fl1.film_id
+                   JOIN film_likes fl2 ON fl1.film_id = fl2.film_id
+                   JOIN film_likes fl3 ON fl1.film_id = fl3.film_id
+                   WHERE fl1.user_id = ?
+                     AND fl2.user_id = ?
+                   GROUP BY f.film_id
+                   ORDER BY COUNT(fl1.user_id) DESC) cf
+                JOIN mpa_ratings AS m ON cf.mpa_id = m.mpa_id
+                LEFT JOIN film_genres AS fg ON cf.film_id = fg.film_id
+                JOIN genres AS g ON fg.genre_id = g.genre_id""";
+        List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, userId, friendId);
+        return films;
+    }
+
+    @Override
     public boolean existsById(Long id) {
         String sql = "SELECT COUNT(*) FROM films WHERE film_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
@@ -316,6 +342,12 @@ public class JdbcFilmRepository implements FilmRepository {
         jdbcTemplate.update(deleteSql, film.getId());
 
         saveFilmGenres(film);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        String deleteFilmSql = "DELETE FROM films WHERE film_id = ?";
+        jdbcTemplate.update(deleteFilmSql, id);
     }
 
     private void updateFilmDirectors(Film film) {
