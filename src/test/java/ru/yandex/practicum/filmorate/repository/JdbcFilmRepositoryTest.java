@@ -170,7 +170,6 @@ class JdbcFilmRepositoryTest {
         assertThat(films.contains(2L)).isTrue();
     }
 
-
     @Test
     void testGetCommonFilms() {
         Collection<Film> commonFilms = filmRepository.getCommonFilms(1, 2);
