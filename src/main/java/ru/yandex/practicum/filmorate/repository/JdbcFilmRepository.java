@@ -223,7 +223,7 @@ public class JdbcFilmRepository implements FilmRepository {
                 "FROM films AS f " +
                 "JOIN mpa_ratings AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
-                "JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
                 "WHERE f.film_id IN (SELECT DISTINCT fl.film_id FROM film_likes AS fl WHERE fl.user_id IN (" +
