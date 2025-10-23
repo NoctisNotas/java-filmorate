@@ -55,8 +55,8 @@ public class FilmService {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Пользователя с таким id: " + userId + " не существует");
         }
-        filmRepository.addLike(id, userId);
         feedService.addFeedEvent(userId, "LIKE", "ADD", id);
+        filmRepository.addLike(id, userId);
     }
 
     public void removeLike(Long id, Long userId) {

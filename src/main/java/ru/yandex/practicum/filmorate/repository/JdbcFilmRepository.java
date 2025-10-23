@@ -167,26 +167,24 @@ public class JdbcFilmRepository implements FilmRepository {
     @Override
     public Collection<Film> getCommonFilms(long userId, long friendId) {
         String sql = """
-                SELECT cf.*,
-                       m.name AS mpa_name,
-                       m.description AS mpa_desc,
-                       fg.genre_id,
-                       g.name AS genre_name
+                SELECT cf.*, fg.genre_id, g.name AS genre_name, fd.director_id, d.name AS director_name
                 FROM
-                  (SELECT f.*,
-                          COUNT(fl1.user_id)
+                  (SELECT f.*, m.name AS mpa_name, m.description AS mpa_desc, COUNT(fl1.user_id)
                    FROM films f
                    JOIN film_likes fl1 ON f.film_id = fl1.film_id
                    JOIN film_likes fl2 ON fl1.film_id = fl2.film_id
                    JOIN film_likes fl3 ON fl1.film_id = fl3.film_id
+                   JOIN mpa_ratings AS m ON f.mpa_id = m.mpa_id
                    WHERE fl1.user_id = ?
                      AND fl2.user_id = ?
-                   GROUP BY f.film_id
-                   ORDER BY COUNT(fl1.user_id) DESC) cf
-                JOIN mpa_ratings AS m ON cf.mpa_id = m.mpa_id
+                   GROUP BY f.film_id, m.mpa_id, m.name, m.description  
+                   ORDER BY COUNT(fl1.user_id) DESC) as cf
+                LEFT JOIN film_directors AS fd ON cf.film_id = fd.film_id
+                LEFT JOIN directors AS d ON fd.director_id = d.director_id
                 LEFT JOIN film_genres AS fg ON cf.film_id = fg.film_id
-                JOIN genres AS g ON fg.genre_id = g.genre_id""";
+                LEFT JOIN genres AS g ON fg.genre_id = g.genre_id""";
         List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, userId, friendId);
+        System.out.println(films.size());
         return films;
     }
 
@@ -235,12 +233,17 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public Collection<Film> findFilmsByDirectorSortedByLikes(long id) {
-        String sql = "SELECT f.* FROM films AS f JOIN film_directors AS fd ON f.film_id = fd.film_id " +
+        String sql = "SELECT cf.*, m.name AS mpa_name, m.description AS mpa_desc, " +
+                "fg.genre_id, g.name AS genre_name, fd.director_id, d.name AS director_name " +
+                "FROM (SELECT f.* FROM films AS f JOIN film_directors AS fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id WHERE fd.director_id = ? " +
-                "GROUP BY f.film_id ORDER BY COUNT(fl.user_id) DESC;";
-        List<Film> films = jdbcTemplate.query(sql, filmMapper, id);
-        films.forEach(this::loadFilmGenres);
-        films.forEach(this::loadFilmDirectors);
+                "GROUP BY f.film_id ORDER BY COUNT(fl.user_id) DESC) as cf " +
+                "JOIN mpa_ratings AS m ON cf.mpa_id = m.mpa_id " +
+                "LEFT JOIN film_directors AS fd ON cf.film_id = fd.film_id " +
+                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
+                "LEFT JOIN film_genres AS fg ON cf.film_id = fg.film_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id";
+        List<Film> films = jdbcTemplate.query(sql, filmMapperWithMpaAndGenre, id);
         return films;
     }
 

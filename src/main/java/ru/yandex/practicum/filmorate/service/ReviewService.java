@@ -65,25 +65,21 @@ public class ReviewService {
     public void addLike(Long reviewId, Long userId) {
         validateReviewAndUser(reviewId, userId);
         reviewRepository.addLike(reviewId, userId);
-        feedService.addFeedEvent(userId, "REVIEW", "UPDATE", reviewId);
     }
 
     public void addDislike(Long reviewId, Long userId) {
         validateReviewAndUser(reviewId, userId);
         reviewRepository.addDislike(reviewId, userId);
-        feedService.addFeedEvent(userId, "REVIEW", "UPDATE", reviewId);
     }
 
     public void removeLike(Long reviewId, Long userId) {
         validateReviewAndUser(reviewId, userId);
         reviewRepository.removeLike(reviewId, userId);
-        feedService.addFeedEvent(userId, "REVIEW", "UPDATE", reviewId);
     }
 
     public void removeDislike(Long reviewId, Long userId) {
         validateReviewAndUser(reviewId, userId);
         reviewRepository.removeDislike(reviewId, userId);
-        feedService.addFeedEvent(userId, "REVIEW", "UPDATE", reviewId);
     }
 
     private void validateUserAndFilm(Long userId, Long filmId) {

@@ -62,9 +62,8 @@ public class UserService {
         if (!userRepository.existsById(friendId)) {
             throw new NotFoundException("Пользователь с id = " + friendId + " не найден");
         }
-
-        userRepository.removeFriend(id, friendId);
         feedService.addFeedEvent(id, "FRIEND", "REMOVE", friendId);
+        userRepository.removeFriend(id, friendId);
     }
 
     public Collection<User> getFriends(Long id) {
