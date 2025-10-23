@@ -140,6 +140,13 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public void addLike(Long filmId, Long userId) {
+        String checkSql = "SELECT COUNT(*) FROM film_likes WHERE film_id = ? AND user_id = ?";
+        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, filmId, userId);
+
+        if (count != null && count > 0) {
+            return;
+        }
+
         String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
     }
@@ -177,7 +184,7 @@ public class JdbcFilmRepository implements FilmRepository {
                    JOIN mpa_ratings AS m ON f.mpa_id = m.mpa_id
                    WHERE fl1.user_id = ?
                      AND fl2.user_id = ?
-                   GROUP BY f.film_id, m.mpa_id, m.name, m.description  
+                   GROUP BY f.film_id, m.mpa_id, m.name, m.description
                    ORDER BY COUNT(fl1.user_id) DESC) as cf
                 LEFT JOIN film_directors AS fd ON cf.film_id = fd.film_id
                 LEFT JOIN directors AS d ON fd.director_id = d.director_id
