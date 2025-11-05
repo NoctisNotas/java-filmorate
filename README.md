@@ -8,18 +8,23 @@ Filmorate is a social network  where users can share information about films, ra
 
 ## Database Structure Explanation
 
-The database consists of 7 main tables:
+The database consists of 12 main tables:
 
 ### Core Tables:
 - **users** - stores user information
 - **films** - stores film information
 - **mpa_ratings** - MPA rating catalog (G, PG, PG-13, R, NC-17)
 - **genres** - film genres catalog
+- **directors** - film directors catalog
+- **reviews** - user reviews for films
+- **feed** - user activity feed
 
 ### Relationship Tables:
 - **film_genres** - many-to-many relationship between films and genres
 - **film_likes** - tracks which users liked which films
 - **friendship** - tracks friendships between users
+- **film_directors** - many-to-many relationship between films and directors
+- **review_likes** - tracks likes/dislikes for reviews
 
 ## Key SQL Query Examples
 
@@ -88,4 +93,56 @@ WHERE g.name = 'Комедия';
 UPDATE films 
 SET name = 'New Film Name', description = 'New description', mpa_id = 3
 WHERE film_id = 1;
+```
+
+### 9. Get User Feed Events
+```sql
+SELECT event_type, operation, entity_id, event_date
+FROM feed 
+WHERE user_id = 1 
+ORDER BY event_date DESC;
+```
+
+### 10. Get Reviews with Usefulness Score
+```sql
+SELECT r.review_id, r.content, r.is_positive, r.useful,
+       u.name as user_name, f.name as film_name
+FROM reviews r
+JOIN users u ON r.user_id = u.user_id
+JOIN films f ON r.film_id = f.film_id
+ORDER BY r.useful DESC;
+```
+
+### 11. Search Films by Director and Title
+```sql
+SELECT f.*, d.name as director_name
+FROM films f
+LEFT JOIN film_directors fd ON f.film_id = fd.film_id
+LEFT JOIN directors d ON fd.director_id = d.director_id
+WHERE LOWER(f.name) LIKE '%search_term%' 
+   OR LOWER(d.name) LIKE '%search_term%';
+```
+
+### 12. Get Films by Director Sorted by Year
+```sql
+SELECT f.* 
+FROM films f
+JOIN film_directors fd ON f.film_id = fd.film_id
+WHERE fd.director_id = 1
+ORDER BY f.release_date ASC;
+```
+
+### 13. Add Review Like/Dislike
+```sql
+INSERT INTO review_likes (review_id, user_id, is_like) 
+VALUES (1, 1, true);
+```
+
+### 14. Get Common Films Between Friends
+```sql
+SELECT f.* 
+FROM films f
+JOIN film_likes fl1 ON f.film_id = fl1.film_id
+JOIN film_likes fl2 ON f.film_id = fl2.film_id
+WHERE fl1.user_id = 1 AND fl2.user_id = 2;
 ```

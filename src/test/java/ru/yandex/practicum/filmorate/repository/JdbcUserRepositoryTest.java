@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,11 +96,9 @@ class JdbcUserRepositoryTest {
 
     @Test
     void testSaveUser() {
-        // Очищаем таблицы в правильном порядке (из-за foreign keys)
         jdbcTemplate.update("DELETE FROM friendship");
         jdbcTemplate.update("DELETE FROM users");
 
-        // Сбрасываем sequence для users (для H2)
         jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN user_id RESTART WITH 1");
 
         User newUser = new User();
@@ -137,4 +136,31 @@ class JdbcUserRepositoryTest {
                 .extracting(User::getId)
                 .doesNotContain(4L);
     }
+
+    @Test
+    void testDeleteUser() {
+        userRepository.deleteById(1L);
+
+        Optional<User> userAfterDelete = userRepository.findById(1L);
+        assertThat(userAfterDelete).isEmpty();
+
+        boolean exists = userRepository.existsById(1L);
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    void testUserHasLike() {
+        assertThat(userRepository.userHasLike(1L)).isTrue();
+    }
+
+    @Test
+    void testGetUsersWithSameLikes() {
+        List<Long> users = userRepository.getUsersWithSameLikes(3L);
+
+        assertThat(users.size()).isEqualTo(2);
+        assertThat(users.contains(2L)).isTrue();
+        assertThat(users.contains(4L)).isTrue();
+        assertThat(users.contains(3L)).isFalse();
+    }
+
 }
